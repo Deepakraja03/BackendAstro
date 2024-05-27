@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const bcrypt = require('bcrypt');
 require('dotenv').config();
 
 const app = express();
@@ -33,6 +34,26 @@ app.use(express.json());
 app.use('/', (req, res) => {
   res.send("Server running successfully");
 });
+
+
+const userSchema = new mongoose.Schema({
+    admin: String,
+    password: String
+  });
+  const User = mongoose.model('User', userSchema);
+  
+  const slotSchema = new mongoose.Schema({
+    date: Date,
+    starttime: String,  // Ensure field name matches
+    endtime: String,    // Ensure field name matches
+    mode: String,
+    isBooked: {
+      type: Boolean,
+      default: false
+    }
+  });
+  
+  const Slot = mongoose.model('Slot', slotSchema);
 
 
 const port = process.env.PORT || 5000;
