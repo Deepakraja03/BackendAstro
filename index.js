@@ -30,12 +30,6 @@ mongoose
 // Parse incoming JSON data
 app.use(express.json());
 
-app.use('/', (req, res) => {
-  res.send("Server running successfully");
-});
-
-
-
 const userSchema = new mongoose.Schema({
     admin: String,
     password: String
