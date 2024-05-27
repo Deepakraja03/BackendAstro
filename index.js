@@ -5,15 +5,15 @@ require('dotenv').config();
 
 const app = express();
 
-// const corsOptions = {
-//   origin: ['https://crazycars.vercel.app'],
-//   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-//   credentials: true, // enable set cookie
-//   optionsSuccessStatus: 204,
-// };
+const corsOptions = {
+  origin: ['https://astro-portfolio-beta-ten.vercel.app'],
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true, // enable set cookie
+  optionsSuccessStatus: 204,
+};
 
-// app.use(cors(corsOptions));
-app.use(cors());
+app.use(cors(corsOptions));
+// app.use(cors());
 const dbURI = process.env.DB;
 mongoose
   .connect(dbURI, {
@@ -90,7 +90,7 @@ const userSchema = new mongoose.Schema({
       res.status(500).json({ message: 'Server error' });
     }
   });
-  
+
 
   app.post('/api/slots', async (req, res) => {
     const { date, starttime, endtime, mode } = req.body;
