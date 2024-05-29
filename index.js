@@ -56,6 +56,7 @@ const dataSchema = new mongoose.Schema({
   time: { type: String, required: true },
   mode: { type: String, required: true },
   email: { type: String, required: true },
+  isSubmitted: { type: Boolean, required: true }
 });
 
 // Create a model from the schema
@@ -150,7 +151,7 @@ app.put('/api/slots/book/:slotId', async (req, res) => {
 
 app.post('/data', async (req, res) => {
   try {
-    const { name, phone, date, time, mode, email } = req.body;
+    const { name, phone, date, time, mode, email, isSubmitted } = req.body;
 
     // Create a new data document
     const newData = new Data({
@@ -160,6 +161,7 @@ app.post('/data', async (req, res) => {
       time,
       mode,
       email,
+      isSubmitted,
     });
 
     // Save the new data document to the database
