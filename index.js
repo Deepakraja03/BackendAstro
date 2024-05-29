@@ -7,7 +7,7 @@ require('dotenv').config();
 const app = express();
 
 const corsOptions = {
-  origin: ['https://astro-portfolio-beta-ten.vercel.app'],
+  origin: ['https://astro-portfolio-beta-ten.vercel.app', 'http://localhost:3000'],
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   optionsSuccessStatus: 204,
