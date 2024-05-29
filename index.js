@@ -176,6 +176,27 @@ app.post('/data', async (req, res) => {
   }
 });
 
+app.get('/data', async (req, res) => {
+  try {
+    const { date, time, mode } = req.query;
+
+    // Validate the input parameters
+    if (!date || !time || !mode) {
+      return res.status(400).json({ message: 'Missing required query parameters' });
+    }
+
+    // Find data matching the criteria
+    const data = await Data.find({ date, time, mode });
+
+    // Send the retrieved data back to the client
+    res.status(200).json(data);
+  } catch (error) {
+    // If an error occurs, send a 500 (Internal Server Error) response
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred' });
+  }
+});
+
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
   console.log(`Server started on port ${port}`);
