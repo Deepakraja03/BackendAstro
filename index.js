@@ -150,7 +150,6 @@ app.put('/api/slots/book/:slotId', async (req, res) => {
 
 app.post('/data', async (req, res) => {
   try {
-    // Extract the data from the request body
     const { name, phone, date, time, mode, email } = req.body;
 
     // Create a new data document
