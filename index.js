@@ -49,6 +49,19 @@ const slotSchema = new mongoose.Schema({
 
 const Slot = mongoose.model('Slot', slotSchema);
 
+const dataSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  phone: { type: String, required: true },
+  date: { type: Date, required: true },
+  time: { type: String, required: true },
+  mode: { type: String, required: true },
+  email: { type: String, required: true },
+});
+
+// Create a model from the schema
+const Data = mongoose.model('Data', dataSchema);
+
+
 app.post('/api/register', async (req, res) => {
   const { admin, password } = req.body;
   try {
@@ -131,6 +144,34 @@ app.put('/api/slots/book/:slotId', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+app.post('/data', async (req, res) => {
+  try {
+    // Extract the data from the request body
+    const { name, phone, date, time, mode, email } = req.body;
+
+    // Create a new data document
+    const newData = new Data({
+      name,
+      phone,
+      date,
+      time,
+      mode,
+      email,
+    });
+
+    // Save the new data document to the database
+    await newData.save();
+
+    // Send a success response back to the client
+    res.status(200).json({ message: 'Data saved successfully' });
+  } catch (error) {
+    // If an error occurs, send a 500 (Internal Server Error) response
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred' });
   }
 });
 
