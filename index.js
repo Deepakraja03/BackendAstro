@@ -128,23 +128,36 @@ app.get('/api/slots', async (req, res) => {
 });
 
 app.post('/api/slots/book', async (req, res) => {
-  const { slotId } = req.body;
+  const { slotId, dataId } = req.body;
   try {
     const slot = await Slot.findById(slotId);
+    const data = await Data.findById(dataId);
+
     if (!slot) {
       return res.status(404).json({ message: 'Slot not found' });
+    }
+    if (!data) {
+      return res.status(404).json({ message: 'Data not found' });
     }
     if (slot.isBooked) {
       return res.status(400).json({ message: 'Slot is already booked' });
     }
+
+    // Mark the slot as booked
     slot.isBooked = true;
-    const updatedSlot = await slot.save();
-    res.status(200).json({ message: 'Slot booked successfully', slot: updatedSlot });
+    await slot.save();
+
+    // Mark the data as submitted
+    data.isSubmitted = true;
+    await data.save();
+
+    res.status(200).json({ message: 'Slot booked successfully', slot });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 app.post('/data', async (req, res) => {
   try {
@@ -173,7 +186,8 @@ app.post('/data', async (req, res) => {
 
 app.get('/api/latestdata', async (req, res) => {
   try {
-    const latestData = await Data.findOne().sort({ _id: -1 }).limit(1);
+    // Fetch the latest data entry which is not yet marked as submitted
+    const latestData = await Data.findOne({ isSubmitted: false }).sort({ _id: -1 }).limit(1);
     if (!latestData) {
       return res.status(404).json({ message: 'No data found' });
     }
@@ -183,6 +197,7 @@ app.get('/api/latestdata', async (req, res) => {
     res.status(500).json({ message: 'An error occurred' });
   }
 });
+
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
