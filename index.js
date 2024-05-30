@@ -184,8 +184,18 @@ app.post('/data', async (req, res) => {
   }
 });
 
-
-
+app.get('/api/latest-data', async (req, res) => {
+  try {
+    const latestData = await Data.findOne().sort({ _id: -1 }).limit(1);
+    if (!latestData) {
+      return res.status(404).json({ message: 'No data found' });
+    }
+    res.status(200).json(latestData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred' });
+  }
+});
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
