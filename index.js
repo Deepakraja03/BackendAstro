@@ -148,10 +148,20 @@ app.post('/api/slots/book', async (req, res) => {
 
 app.post('/data', async (req, res) => {
   try {
-    const { name, phone, date, time, mode, email, isSubmitted } = req.body;
+    const { name, phone, date, time, mode, email, isSubmitted, slotId } = req.body;
 
-    // Log the received data
-    console.log('Received data:', req.body);
+    // Find the slot by ID
+    const slot = await Slot.findById(slotId);
+    if (!slot) {
+      return res.status(404).json({ message: 'Slot not found' });
+    }
+    if (slot.isBooked) {
+      return res.status(400).json({ message: 'Slot is already booked' });
+    }
+
+    // Book the slot
+    slot.isBooked = true;
+    await slot.save();
 
     // Save the new data document to the database
     const newData = new Data({
@@ -173,6 +183,7 @@ app.post('/data', async (req, res) => {
     res.status(500).json({ message: 'An error occurred' });
   }
 });
+
 
 
 
