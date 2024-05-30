@@ -56,12 +56,10 @@ const dataSchema = new mongoose.Schema({
   time: { type: String, required: true },
   mode: { type: String, required: true },
   email: { type: String, required: true },
-  isSubmitted: { type: Boolean, required: true }
+  isSubmitted: { type: Boolean, required: true, default: false }
 });
 
-// Create a model from the schema
 const Data = mongoose.model('Data', dataSchema);
-
 
 app.post('/api/register', async (req, res) => {
   const { admin, password } = req.body;
@@ -129,8 +127,8 @@ app.get('/api/slots', async (req, res) => {
   }
 });
 
-app.put('/api/slots/book/:slotId', async (req, res) => {
-  const { slotId } = req.params;
+app.post('/api/slots/book', async (req, res) => {
+  const { slotId } = req.body;
   try {
     const slot = await Slot.findById(slotId);
     if (!slot) {
@@ -148,12 +146,14 @@ app.put('/api/slots/book/:slotId', async (req, res) => {
   }
 });
 
-
 app.post('/data', async (req, res) => {
   try {
     const { name, phone, date, time, mode, email, isSubmitted } = req.body;
 
-    // Create a new data document
+    // Log the received data
+    console.log('Received data:', req.body);
+
+    // Save the new data document to the database
     const newData = new Data({
       name,
       phone,
@@ -163,8 +163,6 @@ app.post('/data', async (req, res) => {
       email,
       isSubmitted,
     });
-
-    // Save the new data document to the database
     await newData.save();
 
     // Send a success response back to the client
@@ -176,26 +174,7 @@ app.post('/data', async (req, res) => {
   }
 });
 
-app.get('/data', async (req, res) => {
-  try {
-    const { date, time, mode } = req.query;
 
-    // Validate the input parameters
-    if (!date || !time || !mode) {
-      return res.status(400).json({ message: 'Missing required query parameters' });
-    }
-
-    // Find data matching the criteria
-    const data = await Data.find({ date, time, mode });
-
-    // Send the retrieved data back to the client
-    res.status(200).json(data);
-  } catch (error) {
-    // If an error occurs, send a 500 (Internal Server Error) response
-    console.error(error);
-    res.status(500).json({ message: 'An error occurred' });
-  }
-});
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
