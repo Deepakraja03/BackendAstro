@@ -184,7 +184,7 @@ app.post('/data', async (req, res) => {
   }
 });
 
-app.get('/api/latest-data', async (req, res) => {
+app.get('/api/latestdata', async (req, res) => {
   try {
     const latestData = await Data.findOne().sort({ _id: -1 }).limit(1);
     if (!latestData) {
