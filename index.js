@@ -228,7 +228,17 @@ app.post('/api/blogs', async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 });
-
+app.get('/api/blogs/:id', async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) {
+      return res.status(404).json({ message: 'Blog not found' });
+    }
+    res.json(blog);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 
 
