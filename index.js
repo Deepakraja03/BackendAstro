@@ -61,6 +61,14 @@ const dataSchema = new mongoose.Schema({
 
 const Data = mongoose.model('Data', dataSchema);
 
+const blogSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  content: { type: String, required: true },
+  image: { type: String },
+  createdAt: { type: Date, default: Date.now },
+});
+const Blog = mongoose.model('Blog', blogSchema);
+
 app.post('/api/register', async (req, res) => {
   const { admin, password } = req.body;
   try {
@@ -197,6 +205,32 @@ app.get('/api/latestdata', async (req, res) => {
     res.status(500).json({ message: 'An error occurred' });
   }
 });
+
+
+app.get('/api/blogs', async (req, res) => {
+  try {
+    const blogs = await Blog.find();
+    res.json(blogs);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.post('/api/blogs', async (req, res) => {
+  const { title, content, image } = req.body; // Include image
+
+  const newBlog = new Blog({ title, content, image });
+
+  try {
+    const savedBlog = await newBlog.save();
+    res.status(201).json(savedBlog);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+
+
 
 
 const port = process.env.PORT || 5000;
