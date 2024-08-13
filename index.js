@@ -354,7 +354,9 @@ app.delete('/api/blogs/:id', async (req, res) => {
   }
 });
 
-
+app.use('/', async(req,res) => {
+  res.send('Backend is working');
+})
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
