@@ -16,6 +16,10 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ limit: '2mb', extended: true }));
+
+
 const dbURI = process.env.DB;
 mongoose
   .connect(dbURI, {
@@ -65,9 +69,11 @@ const blogSchema = new mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, required: true },
   image: { type: String },
+  category: { type: String }, // Add category field
   createdAt: { type: Date, default: Date.now },
 });
 const Blog = mongoose.model('Blog', blogSchema);
+
 
 app.post('/api/register', async (req, res) => {
   const { admin, password } = req.body;
@@ -206,6 +212,22 @@ app.get('/api/latestdata', async (req, res) => {
   }
 });
 
+app.get('/getData', async (req, res) => {
+  try {
+    const data = await Data.find();
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.use((err, req, res, next) => {
+  if (err.status === 413) { // 413: Payload Too Large
+    return res.status(413).json({ message: 'Payload too large. Please upload a smaller file.' });
+  }
+  next(err);
+});
+
 
 app.get('/api/blogs', async (req, res) => {
   try {
@@ -217,9 +239,9 @@ app.get('/api/blogs', async (req, res) => {
 });
 
 app.post('/api/blogs', async (req, res) => {
-  const { title, content, image } = req.body; // Include image
+  const { title, content, image, category } = req.body; // Include image
 
-  const newBlog = new Blog({ title, content, image });
+  const newBlog = new Blog({ title, content, image, category });
 
   try {
     const savedBlog = await newBlog.save();
@@ -228,6 +250,85 @@ app.post('/api/blogs', async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 });
+
+app.get('/api/categories', async (req, res) => {
+  try {
+    const blogs = await Blog.find();
+    const categories = [...new Set(blogs.map(blog => blog.category).filter(Boolean))];
+    res.json(categories);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Update route to filter blogs by category
+app.get('/api/blogsfilter', async (req, res) => {
+  try {
+    const { search, category } = req.query;
+
+    // Create a filter object based on category
+    const filter = category ? { category } : {};
+
+    // If a search term is provided, add a title/content regex search to the filter
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } }, // Case-insensitive search on title
+        { content: { $regex: search, $options: 'i' } } // Case-insensitive search on content
+      ];
+    }
+
+    // Fetch blogs based on the constructed filter
+    const blogs = await Blog.find(filter);
+
+    res.json(blogs);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
+
+const categorySchema = new mongoose.Schema({
+  name: { type: String, unique: true, required: true }
+});
+
+const Category = mongoose.model('Category', categorySchema);
+
+app.post('/add-category', async (req, res) => {
+  const { category } = req.body;
+
+  if (!category) {
+    return res.status(400).json({ message: 'Category is required' });
+  }
+
+  try {
+    // Check if the category already exists
+    const existingCategory = await Category.findOne({ name: category });
+
+    if (existingCategory) {
+      return res.status(400).json({ message: 'Category already exists' });
+    }
+
+    // Create a new category
+    const newCategory = new Category({ name: category });
+    await newCategory.save();
+
+    res.status(201).json({ message: 'Category added successfully' });
+  } catch (error) {
+    console.error('Error adding category:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.get('/api/getcategories', async (req, res) => {
+  try {
+    const cat = await Category.find();
+    res.json(cat);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 app.get('/api/blogs/:id', async (req, res) => {
   try {
     const blog = await Blog.findById(req.params.id);
